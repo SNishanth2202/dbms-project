@@ -2,15 +2,23 @@ import express from "express";
 import { db } from "../db.js";
 const router = express.Router();
 
-// CREATE vehicle
+// CREATE vehicle (supports optional vehicle_id)
 router.post("/", async (req, res) => {
-  const { owner_id, vehicle_type, registration_number, model } = req.body;
+  const { vehicle_id, owner_id, vehicle_type, registration_number, model } = req.body;
   try {
-    const [result] = await db.query(
-      "INSERT INTO Vehicles (owner_id, vehicle_type, registration_number, model) VALUES (?, ?, ?, ?)",
-      [owner_id, vehicle_type, registration_number, model]
-    );
-    res.json({ id: result.insertId, message: "Vehicle added successfully" });
+    if (vehicle_id !== undefined && vehicle_id !== null && `${vehicle_id}` !== "") {
+      const [result] = await db.query(
+        "INSERT INTO Vehicles (vehicle_id, owner_id, vehicle_type, registration_number, model) VALUES (?, ?, ?, ?, ?)",
+        [vehicle_id, owner_id, vehicle_type, registration_number, model]
+      );
+      return res.json({ id: vehicle_id, insertId: result.insertId ?? vehicle_id, message: "Vehicle added successfully" });
+    } else {
+      const [result] = await db.query(
+        "INSERT INTO Vehicles (owner_id, vehicle_type, registration_number, model) VALUES (?, ?, ?, ?)",
+        [owner_id, vehicle_type, registration_number, model]
+      );
+      return res.json({ id: result.insertId, message: "Vehicle added successfully" });
+    }
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -20,7 +28,7 @@ router.post("/", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const [rows] = await db.query(`
-      SELECT v.*, o.owner_name 
+      SELECT v.*, o.owners_name 
       FROM Vehicles v
       JOIN Owners o ON v.owner_id = o.owner_id
     `);

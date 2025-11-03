@@ -2,15 +2,23 @@ import express from "express";
 import { db } from "../db.js";
 const router = express.Router();
 
-// CREATE registration
+// CREATE registration (supports optional registration_id)
 router.post("/", async (req, res) => {
-  const { vehicle_id, registration_date, expiry_date } = req.body;
+  const { registration_id, vehicle_id, registration_date, expiry_date } = req.body;
   try {
-    const [result] = await db.query(
-      "INSERT INTO Registrations (vehicle_id, registration_date, expiry_date) VALUES (?, ?, ?)",
-      [vehicle_id, registration_date, expiry_date]
-    );
-    res.json({ id: result.insertId, message: "Registration added successfully" });
+    if (registration_id !== undefined && registration_id !== null && `${registration_id}` !== "") {
+      const [result] = await db.query(
+        "INSERT INTO Registrations (registration_id, vehicle_id, registration_date, expiry_date) VALUES (?, ?, ?, ?)",
+        [registration_id, vehicle_id, registration_date, expiry_date]
+      );
+      return res.json({ id: registration_id, insertId: result.insertId ?? registration_id, message: "Registration added successfully" });
+    } else {
+      const [result] = await db.query(
+        "INSERT INTO Registrations (vehicle_id, registration_date, expiry_date) VALUES (?, ?, ?)",
+        [vehicle_id, registration_date, expiry_date]
+      );
+      return res.json({ id: result.insertId, message: "Registration added successfully" });
+    }
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

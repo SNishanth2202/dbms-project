@@ -5,10 +5,17 @@ import ownerRoutes from "./routes/owners.js";
 import vehicleRoutes from "./routes/vehicles.js";
 import registrationRoutes from "./routes/registrations.js";
 import officeRoutes from "./routes/offices.js";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Serve frontend static files
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const publicPath = path.resolve(__dirname, "../frontend/public");
+app.use(express.static(publicPath));
 
 // Routes
 app.use("/owners", ownerRoutes);
@@ -17,7 +24,7 @@ app.use("/registrations", registrationRoutes);
 app.use("/offices", officeRoutes);
 
 app.get("/", (req, res) => {
-  res.send("Vehicle Registration API is running ");
+  res.sendFile(path.join(publicPath, "index.html"));
 });
 
 app.listen(5000, () => console.log("Server running on port 5000"));

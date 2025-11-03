@@ -2,15 +2,23 @@ import express from "express";
 import { db } from "../db.js";
 const router = express.Router();
 
-// CREATE office
+// CREATE office (supports optional office_id)
 router.post("/", async (req, res) => {
-  const { office_name, location } = req.body;
+  const { office_id, office_name, location } = req.body;
   try {
-    const [result] = await db.query(
-      "INSERT INTO Offices (office_name, location) VALUES (?, ?)",
-      [office_name, location]
-    );
-    res.json({ id: result.insertId, message: "Office added successfully" });
+    if (office_id !== undefined && office_id !== null && `${office_id}` !== "") {
+      const [result] = await db.query(
+        "INSERT INTO Offices (office_id, office_name, location) VALUES (?, ?, ?)",
+        [office_id, office_name, location]
+      );
+      return res.json({ id: office_id, insertId: result.insertId ?? office_id, message: "Office added successfully" });
+    } else {
+      const [result] = await db.query(
+        "INSERT INTO Offices (office_name, location) VALUES (?, ?)",
+        [office_name, location]
+      );
+      return res.json({ id: result.insertId, message: "Office added successfully" });
+    }
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
