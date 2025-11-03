@@ -101,7 +101,7 @@
               <h5 class="mb-3">Vehicle Form</h5>
               <form id="vehicleForm">
                 <div class="mb-2">
-                  <label class="form-label">Vehicle ID (manual)</label>
+                  <label class="form-label">Vehicle ID</label>
                   <input class="form-control" id="vehicle_id" type="number" placeholder="e.g. 1001" />
                 </div>
                 <div class="mb-2">
@@ -269,11 +269,14 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // Auto-detect API base: use same-origin when on :5000, otherwise point to backend :5000
-    const isBackendServed = location.port === '5000';
+    // Auto-detect API base
+    // - Production (Render, etc.): use same-origin ('') so frontend hits its own API
+    // - Local dev: if running on localhost/127.* or file/Live Server, point to http://localhost:5000
     const host = location.hostname || 'localhost';
-    const proto = (location.protocol === 'file:') ? 'http:' : location.protocol;
-    const API_BASE = isBackendServed ? '' : `${proto}//${host}:5000`;
+    const isLocalHost = /^(localhost|127\.|0\.0\.0\.0|\[::1\])$/.test(host);
+    const prodBase = '';
+    const devBase = 'http://localhost:5000';
+    const API_BASE = isLocalHost ? devBase : prodBase;
 
     const api = {
       owners: `${API_BASE}/owners`,
